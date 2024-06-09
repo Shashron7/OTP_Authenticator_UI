@@ -1,54 +1,69 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
-import {BrowserRouter, Route, Routes, useNavigate} from 'react-router-dom'
-import Landing from './Components/Landing';
-import Dashboard from './Components/Dashboard';
 import './App.css'
 import { CountContext } from './Components/Context';
+import { useRecoilState, useRecoilValue, RecoilRoot, useSetRecoilState } from 'recoil';
+import countAtom from './store/atoms/count';
 
 function App() {
-  const [count, setCount]=useState(0);
-  //wrap anyone who wants to use the teleported value inside a Provider.
   return (
     <>
-    <CountContext.Provider value={{count,setCount}}>
-    <Count/>
-    </CountContext.Provider>
-    
+    <Count/>    
     </>
   )
 }
 
 
-//prop drilling 
 
 function Count(){
-  const {count,setCount}=useContext(CountContext);
-
+  console.log("rendered")
   return(
     <div>
+      <RecoilRoot>
       <CountRenderer/> 
       <Buttons/>
+      <Disp/>
+      </RecoilRoot>
     </div>
   )
 }
 function CountRenderer(){
-  const {count}=useContext(CountContext);
-  return(
+  console.log("renderer rerendered")
+  const count=useRecoilValue(countAtom); //since we just need the value of the state we use this hook
+  return( 
     <div>
       {count}
     </div>
   )
 }
 function Buttons(){
-  const {count,setCount}=useContext(CountContext);
+const setCount=useSetRecoilState(countAtom);
+console.log("buttons rerendered");
  return(
   <div>
-    <button onClick={()=>{setCount(count+1)}}>Increment</button>
-    <button onClick={()=>{setCount(count-1)}}>Decrement</button>
+    <button onClick={()=>{setCount(count=>count+1)}}>Increment</button>
+    <button onClick={()=>{setCount(count=>count-1)}}>Decrement</button>
   </div>
  )
+}
+function Disp(){
+  const count=useRecoilValue(countAtom);
+  const [text,setText]=useState("");
+  useEffect(()=>{
+    function changeText(){
+      if(count%2==0){
+        setText("It is even");
+      }
+      else setText("");
+    }
+    changeText();
+  },[count]);  //useEffect only occurs for the first render. Doesnt work for subsequent renders.
+  return(
+    <div>
+      {text}
+    </div>
+  )
 }
 
 
